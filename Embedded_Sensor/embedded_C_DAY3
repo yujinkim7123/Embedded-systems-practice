@@ -1,0 +1,135 @@
+Created on: 2022. 9. 23.
+
+        
+      
+
+ Author: SSAFY
+
+
+
+
+*/
+#define _CRT_SECURE_NO_WARNINGS
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+struct Node{
+
+int idx;
+int cnt;
+
+
+};
+int main(){
+
+FILE *fp = fopen("log.txt", "r");
+
+char buf[1000];
+char top_time[3][15];
+char beforetime[15];
+char str[1000][15];
+struct Node result[1000];
+int idx = 0;
+
+fgets(buf, 1000, fp);
+char *p = strtok(buf, " ");
+p = strtok(NULL, " ");
+p = strtok(NULL, " ");
+
+strcpy(beforetime, p);
+strcpy(str[idx], p);
+result[idx].cnt = 1;
+result[idx].idx = idx;
+
+while(1){
+
+	memset(buf,0, sizeof(buf));
+
+	if(fgets(buf, 1000, fp) == NULL)break;
+
+	char *p = strtok(buf, " ");
+	p = strtok(NULL, " ");
+	p = strtok(NULL, " ");
+
+	//printf("%s\n", p);
+
+	if(strcmp(beforetime, p) == 0)
+	{
+		result[idx].cnt++;
+	}
+	else{
+
+	idx++;
+	strcpy(str[idx], p);
+	strcpy(beforetime, p);
+	result[idx].cnt = 1;
+	result[idx].idx = idx;
+
+	}
+
+	memset(buf,0, sizeof(buf));
+}
+
+fclose(fp);
+
+for(int i =0 ; i <idx -1; i++)
+{
+	for(int j = i + 1; j < idx; j++)
+	{
+		if(result[i].cnt < result[j].cnt)
+		{
+			int c, a;
+			c = result[i].cnt;
+			a = result[i].idx;
+			result[i].cnt = result[j].cnt;
+			result[i].idx = result[j].idx;
+			result[j].cnt = c;
+			result[j].idx = a;
+		}
+	}
+}
+
+strcpy( top_time[0], str[result[0].idx]);
+strcpy( top_time[1], str[result[1].idx]);
+strcpy( top_time[2], str[result[2].idx]);
+
+//printf("%s", top_time[0]);
+
+fp =fopen("log.txt", "r");
+
+while(1){
+
+
+	memset(buf,0, sizeof(buf));
+
+	if(fgets(buf, 1000, fp) == NULL)break;
+
+	char copy[20];
+	strcpy(copy, buf);
+
+	//printf("%s\n", buf);
+
+	char *p = strtok(buf, " ");
+	//printf("%s\n", buf);
+	p = strtok(NULL, " ");
+	p = strtok(NULL, " ");
+
+	for(int i =0 ; i < 3; i++){
+
+		//printf("%s %s %s\n", p, top_time[i], buf);
+	if(strcmp(top_time[i], p) == 0)
+	{
+		printf("%s", copy);
+		break;
+	}
+
+	}
+
+}
+
+fclose(fp);
+
+return 0;
+
+
+}

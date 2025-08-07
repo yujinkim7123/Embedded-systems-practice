@@ -1,0 +1,78 @@
+from gpiozero import LED, PWMLED, Button
+from time import sleep
+from signal import pause
+
+moter = PWMLED(9)
+led = LED(2)
+e = LED(11)
+d = LED(0)
+c = LED(5)
+g = LED(6)
+dp = LED(13)
+f = LED(19)
+a = LED(26)
+b = LED(14)
+bnt1 = Button(27)
+bnt2 = Button(22)
+bnt3 = Button(10)
+
+num = [[a,b,c,d,e,f,g, dp],[b,c], [a,b,g,e,d], [a,b,g,c,d]]
+speed = 0
+speednum = [0, 0.2, 0.6, 1]
+
+state = 0
+
+def led_on():
+    global speed
+    for m in num[0]: m.off()
+    for m in num[speed]: m.on()
+
+
+def speed_set():
+    global speed
+    moter.value = speednum[speed]
+     
+def down():
+    global speed
+    if state == 0 : return
+    speed -= 1
+    if speed <= 0: speed = 1
+    speed_set()
+    led_on()
+
+def up():
+    global speed
+    if state == 0 : return
+    speed = speed + 1
+    if speed == 4:
+        speed = 3
+    speed_set()
+    led_on()
+
+def stop():
+     global speed
+     moter.value = 0
+     speed = 0
+     for m in num[0]: m.off()
+     led.off()
+
+def swtich():
+    global state
+    if state == 0:
+        state = 1
+        led.on()
+    elif state == 1:
+        state = 0
+        stop()
+
+
+bnt1.when_pressed = up
+bnt2.when_pressed = down
+bnt3.when_pressed = swtich
+
+pause()
+    
+
+    
+    
+    

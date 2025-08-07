@@ -1,0 +1,140 @@
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <string.h>
+
+// 서비스할 포트 미리 정해둠
+const char *PORT = "12345";
+
+
+//파일 디스크립터
+int server_sock;
+int client_sock;
+
+void interrupt(int arg)
+{
+	printf("\nYou typed Ctrl + C\n");
+	printf("Bye\n");
+
+	//함수를 정의한 이유는 소켓을 닫아서 미사용 메모리를 만들기 않기 위해서이다.
+
+	close(client_sock);
+	close(server_sock);
+	exit(1);
+}
+
+void removeEnterChar(char *buf)
+{
+	int len = strlen(buf);
+	for (int i = len - 1; i >= 0; i--)
+	{
+		if (buf[i] == '\n')
+			buf[i] = '\0';
+		break;
+	}
+}
+
+int main()
+{
+	// Ctrl + C 누를 경우 안전종료
+	//pid를 이용해서 특정 실행 중인 프로세스에 시그널을 주고 인터럽트 실행
+	//콜백함수를 정의할 경우 내가 함수에 정의한 대로 실행됨
+	signal(SIGINT, interrupt);
+
+	// socket create
+	//tcp/ip 소켓 만들어라.
+	//업계에서는 
+	server_sock = socket(PF_INET, SOCK_STREAM, 0);
+	if (server_sock == -1)
+	{
+		printf("ERROR :: 1_Socket Create Error\n");
+		exit(1);
+	}
+
+	// option setting
+	// 종료 시 3분 정도 동일한 포트 배정 불가 에러 해결
+	//서버 운영하는 입장에서 같은 프로그램을 재빠르게 다시 켜는 걸 막아놓음
+	//우리는 이거 강제로 끄고 편않하게 실습
+	int optval = 1;
+	setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, (void *)&optval, sizeof(optval));
+
+	// 주소 설정
+	struct sockaddr_in server_addr = {0}; //구조체 선언, 
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	//네트워크 방식의 바이트 순서로 ip 설정
+	server_addr.sin_port = htons(atoi(PORT));
+	//네트워크 방식의 바이트 순서로 port 설정
+
+	// bind
+	if (bind(server_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
+	{
+		printf("ERROR :: 2_bind Error\n");
+		exit(1);
+	}
+
+	// listen
+	//대기실 만들기
+	if (listen(server_sock, 5) == -1)
+	{
+		printf("ERROR :: 3_listen Error");
+		exit(1);
+	}
+
+	//클라이언트 정보 받는 소켓 초기화
+	client_sock = 0;
+	struct sockaddr_in client_addr = {0};
+	socklen_t client_addr_len = sizeof(client_addr);
+
+	while (1)
+	{
+		// 새로운 클라이언트를 위해 초기화
+		memset(&client_addr, 0, sizeof(client_addr));
+
+		// accpet
+		//요청받아서 클라이언트 소켓에 정보 채우기
+		// 안내원이 해줌
+		//구조체 형변환
+		client_sock = accept(server_sock, (struct sockaddr *)&client_addr, &client_addr_len);
+		if (client_sock == -1)
+		{
+			printf("ERROR :: 4_accept Error\n");
+			break;
+		}
+
+		// read & write
+		char buf[100];
+		while (1)
+		{
+			memset(buf, 0, 100);
+			int len = read(client_sock, buf, 99);
+
+			// remove '\n'
+			removeEnterChar(buf);
+
+			// client 와 연결이 끊어졌을 때 클라이언트 종료
+			if (len == 0)
+			{
+				printf("INFO :: Disconnect with client... BYE\n");
+				break;
+			}
+
+			// client 에서 exit 입력했을 때 클라이언트 종료
+			if (!strcmp("exit", buf))
+			{
+				printf("INFO :: Client want close... BYE\n");
+				break;
+			}
+			write(client_sock, buf, strlen(buf));
+		}
+		// 클라이언트 소켓 close
+		close(client_sock);
+	}
+	// 서버 소켓 close
+	close(server_sock);
+	return 0;
+}

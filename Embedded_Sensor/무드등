@@ -1,0 +1,48 @@
+from gpiozero import PWMLED, Button
+from signal import pause
+from time import sleep
+
+def flash():
+    global R, G, B
+    global r_value, g_value, b_value
+    
+    R.value = r_value
+    G.value = g_value
+    B.value = b_value
+
+def r_go():    
+    global r_value
+    r_value += 0.1
+    if r_value > 1 : r_value = 0
+    flash()
+    
+def g_go():
+    global g_value
+    g_value += 0.1
+    if g_value > 1 : g_value = 0
+    flash()
+
+def b_go():
+    global b_value
+    b_value += 0.1
+    if b_value > 1 : b_value = 0
+    flash()
+
+R = PWMLED(14)
+G = PWMLED(15)
+B = PWMLED(18)
+
+R_Btn = Button(2)
+G_Btn = Button(3)
+B_Btn = Button(4)
+
+r_value = 1
+g_value = 1
+b_value = 1
+flash()
+
+R_Btn.when_pressed = r_go
+G_Btn.when_pressed = g_go
+B_Btn.when_pressed = b_go
+
+pause()

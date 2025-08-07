@@ -1,0 +1,16 @@
+from gpiozero import DistanceSensor
+from time import sleep
+
+sensor = DistanceSensor(21,20)
+people = 0
+flag = 0
+
+while True:
+    
+    print(people, sensor.distance)
+    
+    if sensor.distance < 0.1 and flag == 0:flag = 1
+    if sensor.distance > 0.1 and flag == 1: #사람이 지나감
+        people += 1
+    
+    sleep(1)

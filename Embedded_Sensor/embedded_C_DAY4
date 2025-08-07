@@ -1,0 +1,54 @@
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdint.h>
+
+
+
+
+int main()
+{
+
+	FILE *fp = fopen("binary","rb");
+	uint8_t buf[14];
+	fread(buf,1,14,fp);
+	fclose(fp);
+/*
+	for(int i=1;i<14;i++){
+		printf("%X\n",buf[i]);
+	}
+*/
+	union Node{
+		uint8_t ori[14];
+
+		struct {
+			uint8_t a[2]; //몸무게 //숫자가 뒤집어져 있어서 임의로 값을 뒤집어서 가져옴
+			uint16_t b; // 비밀번호
+			uint16_t c; //연봉
+			uint8_t d[4]; //음식
+			uint8_t e[4]; //음료
+		}f;
+	}k;
+
+	memcpy(k.ori,buf,14);
+
+	//k.ori = buf;
+
+	printf("%d\n", k.f.a[1]);
+	printf("%d\n", k.f.b);
+	printf("%d\n", k.f.c);
+	for(int i=3;i>=0;i--){
+		printf("%c", k.f.d[i]);
+	}
+	printf("\n");
+	for(int i=3;i>=0;i--){
+		printf("%c", k.f.e[i]);
+	}
+	printf("\n");
+
+
+	return 0;
+
+
+}

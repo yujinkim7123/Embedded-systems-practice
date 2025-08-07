@@ -1,0 +1,38 @@
+from gpiozero import LED
+from time import sleep
+def show(n):
+    for m in num[8]: m.off() #clear
+    for m in num[n]: m.on() #show number
+
+g = LED(14)
+f = LED(26)
+a = LED(15)
+b = LED(18)
+e = LED(23)
+d = LED(24)
+c = LED(25)
+DP = LED(8)
+num = [[a, b, c, d, e, f], #0
+       [b, c], #1
+       [a, b, g, e, d], #2
+       [a, b, g, c, d], #3
+       [f, g, b, c], #4
+       [a, f, g, c, d], #5
+       [a, f, g, e, c, d], #6
+       [f, a, b, c], #7 
+       [a, b, c, d, e, f, g], #8
+       [a, b, c, d, g, f]] #9
+print("INPUT : ", end='')
+n = int(input())
+n1 = n // 10000 % 10
+n2 = n // 1000 % 10
+n3 = n // 100 % 10
+n4 = n // 10 % 10
+n5 = n // 1 % 10
+lst = [n1, n2, n3, n4, n5]
+for i in range(5):
+    show(lst[i])
+    sleep(0.5)
+    
+while True:
+    sleep(1)
